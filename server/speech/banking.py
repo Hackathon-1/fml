@@ -34,20 +34,20 @@ def getProducerAmount():
     r = requests.get('http://api.reimaginebanking.com/accounts/57097a02319313dd1b43b29d?key=cf6fe22672e82008e57d304ac6e0d669')
     return json.loads(r.text)['balance']
 
-#Transfer x amount of money from SP to producer
-def percentContribute(amount):
+#generate amount of money a content-provider gets based on emotional_distance
+def amountContribute(emotions, expected):
 
     #TODO: calculate amount here based on sentiment here
-    amount = getSPAmount() * 1
+    emotional_distance = 1
 
-    #Test. To be removed later
-    print amount
+    for emotion in emotions:
+        emotional_distance -= abs(emotions[emotion]-expected[emotion])
 
     payload = {
         "medium": "balance",
         "payee_id": "57097a02319313dd1b43b29d",
-        "amount": amount,
-        "transaction_date": "2016-09-17",
+        "amount": emotional_distance,
+        "transaction_date": "2016-09-18",
         "description": "Nice Video!"
     }
 
@@ -57,8 +57,37 @@ def percentContribute(amount):
         headers={'content-type':'application/json'},
     )
 
-    return math.floor(amount / 100)
+    return emotional_distance
+
+# ###Example
+##
+## emotions from API 
+##
+# emotions = { 
+#     "anger": 0.00300731952,
+#       "contempt": 5.14648448E-08,
+#       "disgust": 9.180124E-06,
+#       "fear": 0.0001912825,
+#       "happiness": 0.9875571,
+#       "neutral": 0.0009861537,
+#       "sadness": 1.889955E-05,
+#       "surprise": 0.008229999 
+# }
 
 
-print "SP amount: " + str(getSPAmount());
-print "Producer Amount: " + str(getProducerAmount());
+# expected from content-provider
+# expected = { 
+#     "anger": 0,
+#       "contempt": 5.14648448E-08,
+#       "disgust": 9.180124E-06,
+#       "fear": 0.0001912825,
+#       "happiness": 0.9875571,
+#       "neutral": 0.0009861537,
+#       "sadness": 1.889955E-05,
+#       "surprise": 0.008229999 
+# }
+
+# print getSPAmount()
+# print getProducerAmount() 
+
+# percentContribute(emotions, expected)
