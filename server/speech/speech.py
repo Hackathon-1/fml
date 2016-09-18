@@ -6,6 +6,7 @@ import requests
 from bottle import post, request, run
 
 import txt_rcg
+import banking
 
 dummy_data = {
 
@@ -121,5 +122,11 @@ def speech():
 
     # text = get_dummy_data()
     print txt_rcg.analyzeSentiment(text)
+
+
+@post('/amount/')
+def amount():
+    banking.amountContribute(request.form.get('emotions'), request.form.get('expected'))
+
 
 run(host='localhost', port=3001)
