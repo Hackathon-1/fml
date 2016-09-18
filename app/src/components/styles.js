@@ -11,10 +11,7 @@ const styles = {
     alignItems: 'center',
     flexDirection: 'column',
     justifyContent: 'center',
-    display: 'flex !important',
-    '*': {
-      marginTop: 10
-    }
+    display: 'flex !important'
   },
   fadeIn: {
     opacity: 0,

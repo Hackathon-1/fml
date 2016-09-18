@@ -114,10 +114,6 @@ def speech():
         return
 
     upload = request.files.get('wav')
-    # w = wave.open(upload.file, 'rb')
-    # # print(upload)
-    # binary_data = w.readframes(w.getnframes())
-    # w.close()
 
     # Commented out because server was down
     text = send_request(token, upload.file)
@@ -126,9 +122,4 @@ def speech():
     # text = get_dummy_data()
     print txt_rcg.analyzeSentiment(text)
 
-# @post('/emotion/')
-# def emotion():
-
-run(host='localhost', port=8080)
-# if __name__ == "__main__":
-    # app.run()
+run(host='localhost', port=3001)
