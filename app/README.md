@@ -1,3 +1,3 @@
-# Aspect :eyes:
+# Interact
 
-A suggestion engine for internet sourced content built on facial recognition technology.
+A suggestion engine for internet sourced content built on facial and audio recognition technology.
