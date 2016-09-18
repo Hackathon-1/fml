@@ -24,8 +24,8 @@ export class Recorder {
 
     source.connect(node)
     node.connect(context.destination)
+    this.worker.postMessage({ command: 'init', numChannels })
     this.worker.onmessage = (e) => this.cbQueue[e.data.command].pop()(e.data.wav)
-    this.worker.postMessage({ command: 'init', numChannels, cbQueue: this.cbQueue })
   }
 
   stop = () => this.recording = false
@@ -66,8 +66,7 @@ function createWorker(self) {
     recLength += inputBuffer[0].length
   }
 
-  function init(numChannels, cbQueue) {
-    self.cbQueue = cbQueue
+  function init(numChannels) {
     self.numChannels = numChannels
     createChannels()
   }

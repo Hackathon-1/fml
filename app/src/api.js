@@ -19,6 +19,13 @@ export const dispatchWav = (wav) =>
     }
   }).then(toJSON)
 
+export const calculateEmotion = (emotions, expected) =>
+  fetch('http://localhost:3001', {
+    method: 'POST',
+    body: JSON.stringify({ emotions, expected }),
+    headers: { 'Content-Type': 'application/json' }
+  })
+
 function toJSON(res) {
   return res.json()
 }
