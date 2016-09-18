@@ -10,12 +10,12 @@ export const getEmotion = (image) =>
     }
   }).then(toJSON)
 
-export const dispatchBuffers = (buffers) =>
+export const dispatchWav = (wav) =>
   fetch('http://localhost:3000', {
     method: 'POST',
-    body: new Blob([buffers]),
+    body: wav,
     headers: {
-      'Content-Type': 'audio/wav'
+      'Content-Type': 'application/octet-stream'
     }
   }).then(toJSON)
 

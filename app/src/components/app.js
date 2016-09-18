@@ -1,10 +1,10 @@
 import styles from './styles'
-import encoder from 'wav-encoder'
+import recorder from '../recorder'
 import classNames from 'classnames'
 import { observer } from 'mobx-react'
 import React, { Component } from 'react'
 import { action, observable } from 'mobx'
-import { getEmotion, dispatchBuffers } from '../api'
+import { getEmotion, dispatchWav } from '../api'
 
 navigator.getUserMedia =
   navigator.getUserMedia
@@ -15,8 +15,6 @@ navigator.getUserMedia =
 @observer
 export default class App extends Component {
   interval
-  recording = false
-  recordingLength = 0
   @observable videoURL = ''
   @observable videoLoaded = false
 
@@ -31,20 +29,7 @@ export default class App extends Component {
       (stream) => {
         this.buffers = []
         this.video.src = window.URL.createObjectURL(stream)
-
-        // Create the MediaStreamAudioSourceNode
-        const context = new AudioContext()
-        const node = context.createScriptProcessor(1024, 1, 1)
-        const source = context.createMediaStreamSource(stream)
-
-        source.connect(node)
-        node.connect(context.destination)
-        node.onaudioprocess = ({ inputBuffer }) => {
-          if (!this.recording) return
-          const buffer = inputBuffer.getChannelData(0)
-          this.buffers.push(buffer)
-          this.recordingLength += buffer.length
-        }
+        this.recorder = new recorder((new AudioContext()).createMediaStreamSource(stream))
       },
       () => console.log('error')
     )
@@ -61,25 +46,18 @@ export default class App extends Component {
 
   @action loadVideo = (e) => {
     e.preventDefault()
-    this.recording = true
+    this.recorder.record()
     this.videoLoaded = true
     this.interval = setInterval(() => {
       this.getImage()
-
-      const buffers = this.mergeBuffers(this.buffers.slice())
-      encoder.encode({ sampleRate: 44100, channelData: [buffers] })
-        .then(dispatchBuffers)
-        .then(console.log)
-
-      this.buffers = []
-      this.recording = true
-      this.recordingLength = 0
+      this.recorder.exportWAV((wav) => dispatchWav(wav).then(console.log))
+      this.recorder.clear()
     }, 4000)
   }
 
   @action updateURL = (e) => {
     if (this.videoLoaded) {
-      this.recording = false
+      this.recorder.stop()
       this.videoLoaded = false
       clearInterval(this.interval)
     }
@@ -92,22 +70,12 @@ export default class App extends Component {
     getEmotion(image).then(x => x.map(y => console.log(y.scores)))
   }
 
-  mergeBuffers(buffers) {
-    let offset = 0
-    const result = new Float32Array(this.recordingLength)
-    for (let i = 0; i < buffers.length; i++) {
-      result.set(buffers[i], offset)
-      offset += buffers[i].length
-    }
-    return result
-  }
-
   render() {
     return (
-      <div>
+      <div className="ui container">
         <Tracking />
         <header className="ui horizontal divider">Interact</header>
-        <main className={classNames('ui container', styles.flex, styles.fadeIn)}>
+        <main className={classNames(styles.flex, styles.fadeIn)}>
           <form onSubmit={this.loadVideo} style={{ marginBottom: 10, width: '50%' }} className="ui icon fluid input">
             <input placeholder="Video URL" onInput={this.updateURL} />
             <i onClick={this.loadVideo} className="inverted circular search link icon" />
@@ -123,7 +91,7 @@ const Video = observer(({ videoLoaded, src }) =>
   <div className={styles.flex}>
     {!videoLoaded
       ? <img className="ui large image bordered" src="http://semantic-ui.com/images/wireframe/white-image.png" />
-      : <iframe width="560" height="315" src={src} frameBorder="0" allowFullScreen />
+      : <iframe width="800" height="600" src={src} frameBorder="0" allowFullScreen />
     }
   </div>
 )
